@@ -12,10 +12,10 @@
 #   version 
 #
 ############################################################3########
-VERSION="1.2.1"
-RELEASE_TIME="2022-12-30"
+VERSION="2.0.0_dev0.1"
+RELEASE_TIME="2023-12-20"
 HOOM_DIR=`dirname $0`
-echo "INFO  :   Run tgsgapcloser. from $HOOM_DIR ;"
+echo "INFO  :   Run tgsgapcloser2. from $HOOM_DIR ;"
 echo "          Version : $VERSION ;"
 echo "          Release time : $RELEASE_TIME ."
 echo ""
@@ -133,7 +133,7 @@ MIN_IDY_USER="no"
 MIN_MATCH="300"
 MIN_MATCH_USER="no"
 PILON_MEM="300G"
-MINIMAP2_PARAM=" -x ava-ont "
+MINIMAP2_PARAM=" -x map-ont "
 USE_NEW_MINMAP2_ARG="no"
 CHUNK_NUM=3
 USE_RACON="yes"
@@ -163,7 +163,7 @@ while true; do
             MINIMAP2_PARAM="$1"
             USE_NEW_MINMAP2_ARG='yes'
             shift;
-            echo "          --minmap_arg $MINIMAP2_PARAM"
+            echo "              --minmap_arg $MINIMAP2_PARAM"
         ;;
         --scaff)
             shift;
@@ -353,7 +353,7 @@ fi
 # pacbio special default values.
 if [[ $TGS_TYPE == "pb" ]] ; then 
     if [[ $USE_NEW_MINMAP2_ARG != "yes" ]] ; then 
-        MINIMAP2_PARAM=" -x ava-pb "
+        MINIMAP2_PARAM=" -x map-pb "
     fi
     if [[ $MIN_IDY_USER == "no" ]] ; then
         MIN_IDY="0.2"
@@ -394,11 +394,14 @@ else
     print_info "Step 2 , run TGSCandidate ... "
     if [[ ! -e 'done_step2.1_tag' ]] ; then
         # run minimap2
-        print_info_line "2.1 , run minmap2 to map contigs against tgs reads."
+        #print_info_line "2.1 , run minmap2 to map contigs against tgs reads."
+        print_info_line "2.1 , run minmap2 to map tgs reads against contigs"
         check_file $TMP_INPUT_SCAFTIG
         $MiniMap2  $MINIMAP2_PARAM  -t $THREAD  \
-            $TGS_READS  $TMP_INPUT_SCAFTIG \
-            1>$OUT_PREFIX.sub.paf 2>$OUT_PREFIX.minimap2.01.log || exit 1
+            $TMP_INPUT_SCAFTIG  $TGS_READS \
+            1>$OUT_PREFIX.sub.r2c.paf 2>$OUT_PREFIX.minimap2.01.log || exit 1
+        #to fit previous code, now I will fake $OUT_PREFIX.sub.paf from reads against contigs to contigs against tgs reads
+        awk '{printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",$6,$7,$8,$9,$5,$1,$2,$3,$4); for(i=10;i<=NF;i++) printf("\t%s",$i); printf("\n");}' $OUT_PREFIX.sub.r2c.paf >$OUT_PREFIX.sub.paf || exit 1
         date >>'done_step2.1_tag'
     else
         echo 'skip step2.1 since done_step2.1_tag exists'
@@ -619,9 +622,11 @@ fi
 check_file $FINAL_READS 
 check_file $TMP_INPUT_SCAFTIG
 if [[ ! -e 'done_step_4.1_tag' ]] ; then
-    print_info_line "4,1 , mapping contigs against reads ... "
-    $MiniMap2  $MINIMAP2_PARAM  -t $THREAD  $FINAL_READS $TMP_INPUT_SCAFTIG  \
-            1>$OUT_PREFIX.fill.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
+    #print_info_line "4,1 , mapping contigs against reads ... "
+    print_info_line "4,1 , mapping reads against contigs ... "
+    $MiniMap2  $MINIMAP2_PARAM  -t $THREAD $TMP_INPUT_SCAFTIG   $FINAL_READS \
+            1>$OUT_PREFIX.fill.r2c.paf 2>$OUT_PREFIX.minimap2.04.log || exit 1
+    awk '{printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",$6,$7,$8,$9,$5,$1,$2,$3,$4); for(i=10;i<=NF;i++) printf("\t%s",$i); printf("\n");}' $OUT_PREFIX.fill.r2c.paf >$OUT_PREFIX.fill.paf || exit 1
     date >>'done_step_4.1_tag'
 else
     echo 'skip step4.1 since done_step4.1_tag exists'
