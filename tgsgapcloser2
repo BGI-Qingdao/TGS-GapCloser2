@@ -59,14 +59,14 @@ function print_help()
     echo "          --java      <java>               installed java path."
     echo "      optional:"
     echo "          --minmap_arg <minmap2 args>      for example, --minmap_arg ' -x ava-ont'"
-    echo "                                           arg must be wraped by ' '"
-    echo "          --tgstype   <pb/ont>             TGS type. ont by default."
+    echo "                                           arg must be wrapped by ' '"
+    echo "          --tgstype   <ont/pb/hifi>        TGS type. ont by default."
     echo "          --min_idy   <float>              min_idy for filtering TGS reads ."
     echo "                                           0.3 for ont by default."
-    echo "                                           0.2 for pb by default."
+    echo "                                           0.2 for pb/hifi by default."
     echo "          --min_match <int>                min match length for filtering TGS reads ."
     echo "                                           300bp for ont by default."
-    echo "                                           200bp for pb by default."
+    echo "                                           200bp for pb/hifi by default."
     echo "          --thread    <int>                threads uesd. 16 by default."
     echo "          --chunk     <int>                split candidates into chunks to separately do error correction."
     echo "          --pilon_mem <int>                memory used for pilon. 300G for default."
@@ -75,7 +75,7 @@ function print_help()
     echo "          --g_check                        gapsize diff check. off by default."
     echo "          --min_nread <int>                minimum number of reads that can bridge this gap. 1 by default."
     echo "          --max_nread <int>                maximum number of reads that can bridge this gap. -1 by default."
-    echo "          --max_candidate <int>            maximum number of candidate alignment used for error correction and gapfilling. 10 by default"
+    echo "          --max_candidate <int>            maximum number of candidate alignments used for error correction and gap filling. 200 by default"
 }
 
 function check_arg_null() {
@@ -133,7 +133,7 @@ MIN_IDY_USER="no"
 MIN_MATCH="300"
 MIN_MATCH_USER="no"
 PILON_MEM="300G"
-MINIMAP2_PARAM=" -x map-ont "
+MINIMAP2_PARAM=" -N 1000 -r 10 --no-long-join "
 USE_NEW_MINMAP2_ARG="no"
 CHUNK_NUM=3
 USE_RACON="yes"
@@ -142,7 +142,7 @@ RACON_ROUND=1
 G_CHECK=0
 MIN_NREAD=1
 MAX_NREAD=-1
-MAX_CANDIDATE=10
+MAX_CANDIDATE=200
 
 print_info "Parsing args starting ..."
 if [[ $# -lt 1 ]] ; then 
@@ -353,7 +353,19 @@ fi
 # pacbio special default values.
 if [[ $TGS_TYPE == "pb" ]] ; then 
     if [[ $USE_NEW_MINMAP2_ARG != "yes" ]] ; then 
-        MINIMAP2_PARAM=" -x map-pb "
+        MINIMAP2_PARAM=" -N 1000 -r 10 --no-long-join -Hk19 "
+    fi
+    if [[ $MIN_IDY_USER == "no" ]] ; then
+        MIN_IDY="0.2"
+    fi
+    if [[ $MIN_MATCH_USER == "no" ]] ; then
+        MIN_MATCH="200"
+    fi
+fi
+# pacbio-hifi special default values.
+if [[ $TGS_TYPE == "hifi" ]] ; then 
+    if [[ $USE_NEW_MINMAP2_ARG != "yes" ]] ; then 
+        MINIMAP2_PARAM=" -N 1000 -r 10 --no-long-join -k19 -w19 -U50,500 -g10k -A1 -B4 -O6,26 -E2,1 -s200 "
     fi
     if [[ $MIN_IDY_USER == "no" ]] ; then
         MIN_IDY="0.2"
@@ -414,7 +426,7 @@ else
         TMP_INPUT_SCAFF_INFO=$OUT_PREFIX".orignial_scaff_infos"
         check_file $TMP_INPUT_SCAFF_INFO
         # pre filter unwanted alignments.
-        awk '{if(($3<1000000)||($2-$3<1000000)) print $0}' $OUT_PREFIX.sub.paf >$OUT_PREFIX.sub.filter.paf
+        awk '{if(($3<100000)||($2-$3<100000)) print $0}' $OUT_PREFIX.sub.paf >$OUT_PREFIX.sub.filter.paf
         $Candidate --ont_reads_a $TGS_READS \
         --contig2ont_paf $OUT_PREFIX.sub.filter.paf \
         --min_nread $MIN_NREAD \
@@ -634,7 +646,7 @@ fi
 if [[ ! -e 'done_step_4.2_tag' ]] ; then
     print_info_line "4,2 , filling gaps ... "
     # pre filter unwanted alignments.
-    awk '{if(($3<1000000)||($2-$3<1000000)) print $0}' $OUT_PREFIX.fill.paf >$OUT_PREFIX.fill.filter.paf
+    awk '{if(($3<100000)||($2-$3<100000)) print $0}' $OUT_PREFIX.fill.paf >$OUT_PREFIX.fill.filter.paf
     if [[ $G_CHECK == 0 ]] ; then
         $GapCloser --ont_reads_a $FINAL_READS --contig2ont_paf $OUT_PREFIX.fill.filter.paf \
             --min_match=$MIN_MATCH --min_idy=$MIN_IDY \
