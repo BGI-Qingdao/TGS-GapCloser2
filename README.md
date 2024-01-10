@@ -64,11 +64,11 @@ not available
 Usage:
       tgsgapcloser2 --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]
       required:
-          --scaff     <draft scaffolds>      input draft scaffolds.
-          --reads     <TGS reads>     input TGS reads.
+          --scaff     <draft scaffolds>    input draft scaffolds.
+          --reads     <TGS reads>          input TGS reads.
           --output    <output prefix>      output prefix.
      ## error correction module
-          --ne                             do not correct errors. off by default.
+          --ne                             do not correct errors. by default.
           or
           --racon     <racon>              installed racon path. Can be installed following https://github.com/isovic/racon
           or
