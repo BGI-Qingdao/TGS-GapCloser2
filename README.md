@@ -82,7 +82,7 @@ Usage:
           --minmap_arg <minmap2 args>      for example, --minmap_arg \' -x ava-ont\'
                                            arg must be wrapped by \' \'
 
-          --tgstype   <pb/ont/hifi         TGS type. ont by default.
+          --tgstype   <pb/ont/hifi>        TGS type. ont by default.
           --min_idy   <float>              minimum identity for filtering candidate TGS sequences.
                                            0.3 for ont by default.
                                            0.2 for pb/hifi by default.
