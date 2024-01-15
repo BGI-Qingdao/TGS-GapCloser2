@@ -54,50 +54,50 @@ make
 ```
 
 ### Conda install
-conda install -c bioconda tgsgapcloser
+not available
 
-**if your install by conda, please install minimap2 first and make sure that minimap2 is available in your environment.**
+**if you install by conda, please install minimap2 first and make sure that minimap2 is available in your environment.**
 
 ## Usage 
 
 ```
 Usage:
-      tgsgapcloser --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]
+      tgsgapcloser2 --scaff SCAFF_FILE --reads TGS_READS_FILE --output OUT_PREFIX [options...]
       required:
-          --scaff     <draft scaffolds>      input draft scaffolds.
-          --reads     <TGS reads>     input TGS reads.
+          --scaff     <draft scaffolds>    input draft scaffolds.
+          --reads     <TGS reads>          input TGS reads.
           --output    <output prefix>      output prefix.
      ## error correction module
-          --ne                             do not execute error correction.
+          --ne                             do not correct errors. by default.
           or
-          --racon     <racon>              installed racon. Can be installed following https://github.com/isovic/racon
+          --racon     <racon>              installed racon path. Can be installed following https://github.com/isovic/racon
           or
           --pilon     <pilon>              pilon jar package. Can be downloaded from https://github.com/broadinstitute/pilon/releases/download/v1.23/pilon-1.23.jar
-          --java      <java>               installed java.
+          --java      <java>               installed java path.
           --ngs       <ngs_reads>          input NGS reads used for pilon.
-          --samtools  <samtools>           installed samtools.
+          --samtools  <samtools>           installed samtools path.
           
           
       optional:
-          --minmap_arg <minmap2 args>      like --minmap_arg \' -x ava-ont\'
-                                           the arg must be wrapped by \' \'
 
-          --tgstype   <pb/ont>             TGS type. ont by default.
-          --min_idy   <float>              minimum identity for filtering candidate sequences.
+          --minmap_arg <minmap2 args>      for example, --minmap_arg \' -x ava-ont\'
+                                           arg must be wrapped by \' \'
+          --tgstype   <pb/ont/hifi>        TGS type. ont by default.
+          --min_idy   <float>              minimum identity for filtering candidate TGS sequences.
                                            0.3 for ont by default.
-                                           0.2 for pb by default.
-          --min_match <int>                minimum matched length for filtering candidate sequences.
+                                           0.2 for pb/hifi by default.
+          --min_match <int>                minimum matched length for filtering candidate TGS sequences.
                                            300 for ont by default.
-                                           200 for pb by default.
+                                           200 for pb/hifi by default.
           --thread    <int>                number of threads uesd. 16 by default.
           --pilon_mem <int>                memory used for pilon, passing to -Xmx.  can use “m” or “M” for MB, or “g” or “G” for GB. 300G by default.
           --chunk     <int>                split candidates into # of chunks to separately correct errors. 3 by default.
-          --p_round   <int>                iteration number for pilon error-correction. 3 by default.
-          --r_round   <int>                iteration number for racon error-correction. 1 by default.
-          --g_check                        gapsize diff check, none by default.
-          --min_nread <int>          minimum number of reads that can bridge this gap. 1 by default.
-          --max_nread <int>          maximum number of reads that can bridge this gap. -1 by default.
-          --max_candidate <int>  maximum number of candidate alignments used for error correction and gapfilling. 10 by default
+          --p_round   <int>                iteration # of error corretion by pilon. 3 by default.
+          --r_round   <int>                iteration # of error corretion by racon. 3 by default.
+          --g_check                        gap size diff check. off by default.
+          --min_nread <int>                minimum number of reads that can bridge this gap. 1 by default.
+          --max_nread <int>                maximum number of reads that can bridge this gap. -1 by default.
+          --max_candidate <int>            maximum number of candidate alignments used for error correction and gap filling. 200 by default.
 
 ```
 
