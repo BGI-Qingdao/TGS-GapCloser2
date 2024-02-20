@@ -150,6 +150,9 @@ YOUR-INSTALL-DIR/tgsgapcloser  \
     --tgstype ont
     to 
     --tgstype pb
+or
+    to 
+    --tgstype hifi
 ```
 
 * an example of raw Pacbio reads with error correction using long reads only
