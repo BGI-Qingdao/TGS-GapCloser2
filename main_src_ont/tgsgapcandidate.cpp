@@ -467,6 +467,8 @@ struct AppConfig
                 this_cut += e-s+1 ;
                 std::cout<<">seq_"<<candidate_id
                          <<"    #read_name:"<<pair.first
+                         <<"    #read_start:"<<s
+                         <<"    #read_end:"<<e
                          <<"    #scaff_id:"<<pair.second.scaff_id
                          <<"    #gap_id:"<<pair.second.gap_id
                          <<'\n';
@@ -483,6 +485,8 @@ struct AppConfig
             candidate_id ++ ;
             std::cout<<">seq_"<<candidate_id
                      <<"    #read_name:"<<name
+                     <<"    #read_start:"<<s
+                     <<"    #read_end:"<<e
                      <<"    #scaff_id:"<<scaff_id
                      <<"    #gap_id:"<<gap_id
                      <<'\n';
