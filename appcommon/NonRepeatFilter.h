@@ -40,14 +40,17 @@ namespace BGIQD {
                 }
             }
 
-            void Init( int max , float overlap_factor )
+            void Init( int max , float overlap_factor, int curr_scaff_id, int curr_gap_id )
             {
                 max_count = max ; 
                 overlap_fac = overlap_factor ; 
+                scaff_id = curr_scaff_id ;
+                gap_id = curr_gap_id ;
             }
+            int scaff_id;
+            int gap_id ;
             private:
             std::map<int , int > ranges;
-
             int max_count ; 
             float overlap_fac ;
         };

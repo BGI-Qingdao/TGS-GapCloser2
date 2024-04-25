@@ -250,8 +250,10 @@ struct AppConfig
         for( auto & pair : scaff_info_helper.all_scaff )
         {
             auto & a_scaff = pair.second.a_scaff ;
+            int curr_scaff_id = pair.second.scaff_id ;
             for( int i = 1 ; i < (int) a_scaff.size() ; i++ )
             {
+                int curr_gap_id = i;
                 gap_tatal ++ ;
                 auto & prev = a_scaff.at(i-1);
                 auto & next = a_scaff.at(i) ;
@@ -395,6 +397,24 @@ struct AppConfig
                             checked = true ;
                             idy_freq.Touch(int(m1.IDY()*100));
                             idy_freq.Touch(int(m2.IDY()*100));
+                            loger<<BGIQD::LOG::lstart()<<"###FILL LOG --- "
+                                                   <<"    #scaff_id:"<<curr_scaff_id
+                                                   <<"    #gap_id:"<<curr_gap_id
+                                                   <<"    #read_name:"<<m1.target_name
+                                                   <<"    #overlap:"<<prev.gap_size
+                                                   <<"    #map1_qname:"<<m1.query_name
+                                                   <<"    #map1_qstart:"<<m1.query_start
+                                                   <<"    #map1_qend:"<<m1.query_end
+                                                   <<"    #map1_tname:"<<m1.target_name
+                                                   <<"    #map1_tstart:"<<m1.target_start
+                                                   <<"    #map1_tend:"<<m1.target_end
+                                                   <<"    #map2_qname:"<<m2.query_name
+                                                   <<"    #map2_qstart:"<<m2.query_start
+                                                   <<"    #map2_qend:"<<m2.query_end
+                                                   <<"    #map2_tname:"<<m2.target_name
+                                                   <<"    #map2_tstart:"<<m2.target_start
+                                                   <<"    #map2_tend:"<<m2.target_end
+                                                   <<BGIQD::LOG::lend();
                             break;
                         }
                         else if ( tmp.gap_size >= -max_ignored_overlap )
@@ -404,6 +424,24 @@ struct AppConfig
                             idy_freq.Touch(int(m1.IDY()*100));
                             idy_freq.Touch(int(m2.IDY()*100));
                             checked = true ;
+                            loger<<BGIQD::LOG::lstart()<<"###FILL LOG --- "
+                                                   <<"    #scaff_id:"<<curr_scaff_id
+                                                   <<"    #gap_id:"<<curr_gap_id
+                                                   <<"    #read_name:"<<m1.target_name
+                                                   <<"    #overlap:"<<prev.gap_size
+                                                   <<"    #map1_qname:"<<m1.query_name
+                                                   <<"    #map1_qstart:"<<m1.query_start
+                                                   <<"    #map1_qend:"<<m1.query_end
+                                                   <<"    #map1_tname:"<<m1.target_name
+                                                   <<"    #map1_tstart:"<<m1.target_start
+                                                   <<"    #map1_tend:"<<m1.target_end
+                                                   <<"    #map2_qname:"<<m2.query_name
+                                                   <<"    #map2_qstart:"<<m2.query_start
+                                                   <<"    #map2_qend:"<<m2.query_end
+                                                   <<"    #map2_tname:"<<m2.target_name
+                                                   <<"    #map2_tstart:"<<m2.target_start
+                                                   <<"    #map2_tend:"<<m2.target_end
+                                                   <<BGIQD::LOG::lend();
                             break;
                         }
                         else
@@ -417,6 +455,24 @@ struct AppConfig
                         checked = true ;
                         idy_freq.Touch(int(m1.IDY()*100));
                         idy_freq.Touch(int(m2.IDY()*100));
+                        loger<<BGIQD::LOG::lstart()<<"###FILL LOG --- "
+                                                   <<"    #scaff_id:"<<curr_scaff_id
+                                                   <<"    #gap_id:"<<curr_gap_id
+                                                   <<"    #read_name:"<<m1.target_name
+                                                   <<"    #overlap:"<<prev.gap_size
+                                                   <<"    #map1_qname:"<<m1.query_name
+                                                   <<"    #map1_qstart:"<<m1.query_start
+                                                   <<"    #map1_qend:"<<m1.query_end
+                                                   <<"    #map1_tname:"<<m1.target_name
+                                                   <<"    #map1_tstart:"<<m1.target_start
+                                                   <<"    #map1_tend:"<<m1.target_end
+                                                   <<"    #map2_qname:"<<m2.query_name
+                                                   <<"    #map2_qstart:"<<m2.query_start
+                                                   <<"    #map2_qend:"<<m2.query_end
+                                                   <<"    #map2_tname:"<<m2.target_name
+                                                   <<"    #map2_tstart:"<<m2.target_start
+                                                   <<"    #map2_tend:"<<m2.target_end
+                                                   <<BGIQD::LOG::lend();
                         break ;
                     }
                     idy_freq.Touch(int(m1.IDY()*100));
@@ -431,7 +487,7 @@ struct AppConfig
                     }
                     else
                     {
-                        cut_start = m2.target_end;
+                        cut_start = m2.target_end ;
                         need_reverse = true ;
                     }
                     try{
@@ -443,8 +499,29 @@ struct AppConfig
                         }
                         std::string cut_seq =  ont_read.substr(cut_start,cut_len) ;
                         if( need_reverse )
-                            cut_seq = BGIQD::SEQ::seqCompleteReverse(cut_seq);
-                        prev.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = cut_seq;
+                            cut_seq = BGIQD::SEQ::seqCompleteReverse(cut_seq) ;
+                        
+                        loger<<BGIQD::LOG::lstart()<<"###FILL LOG --- "
+                                                   <<"    #scaff_id:"<<curr_scaff_id
+                                                   <<"    #gap_id:"<<curr_gap_id
+                                                   <<"    #read_name:"<<m1.target_name
+                                                   <<"    #fill_start:"<<cut_start
+                                                   <<"    #fill_len:"<<cut_len
+                                                   <<"    #reverse:"<<need_reverse
+                                                   <<"    #map1_qname:"<<m1.query_name
+                                                   <<"    #map1_qstart:"<<m1.query_start
+                                                   <<"    #map1_qend:"<<m1.query_end
+                                                   <<"    #map1_tname:"<<m1.target_name
+                                                   <<"    #map1_tstart:"<<m1.target_start
+                                                   <<"    #map1_tend:"<<m1.target_end
+                                                   <<"    #map2_qname:"<<m2.query_name
+                                                   <<"    #map2_qstart:"<<m2.query_start
+                                                   <<"    #map2_qend:"<<m2.query_end
+                                                   <<"    #map2_tname:"<<m2.target_name
+                                                   <<"    #map2_tstart:"<<m2.target_start
+                                                   <<"    #map2_tend:"<<m2.target_end
+                                                   <<BGIQD::LOG::lend();
+                        prev.extra[BGIQD::stLFR::ContigDetail::ONT_FILL] = cut_seq ;
                         prev.gap_size = cut_seq.size() ;
                         checked = true ;
                         break ;

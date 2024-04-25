@@ -62,7 +62,6 @@ struct AppConfig
             get("TGSGapCandidate",BGIQD::LOG::loglevel::INFO, loger);
     }
 
-
     void LoadONTReads()
     {
         BGIQD::LOG::timer t(loger,"LoadONTReads");
@@ -161,19 +160,19 @@ struct AppConfig
 
     std::map<std::string , BGIQD::SUBSETS::SubSets> pos_caches;
     std::map<std::string , BGIQD::NONREPEAT::NonRepeatFilter> pos_caches_non;
-    std::vector<std::tuple<std::string ,int,int , bool > > pos_caches_split;
+    std::vector<std::tuple<std::string ,int,int , bool ,int , int > > pos_caches_split;
 
-    void UpdatePosCache(const std::string & name , int s , int e ,bool need_reverse )
+    void UpdatePosCache(const std::string & name , int s , int e ,bool need_reverse,int curr_scaff_id, int curr_gap_id )
     {
         if( candidate_merge )
-            pos_caches[name].Push(s,e);
+            pos_caches[name].Push(s,e,curr_scaff_id,curr_gap_id);
         else
-            pos_caches_split.push_back( std::make_tuple( name ,s  , e ,need_reverse ) );
+            pos_caches_split.push_back( std::make_tuple( name ,s  , e ,need_reverse, curr_scaff_id, curr_gap_id ) );
     }
 
-    void UpdateNonRepeatCache(const std::string & name , int s , int e  )
+    void UpdateNonRepeatCache(const std::string & name , int s , int e  ,int curr_scaff_id, int curr_gap_id)
     {
-        pos_caches_non[name].Init(candidate_max, candidate_shake_factor);
+        pos_caches_non[name].Init(candidate_max, candidate_shake_factor,curr_scaff_id,curr_gap_id);
         pos_caches_non[name].Push(s,e);
     }
 
@@ -184,14 +183,15 @@ struct AppConfig
             const auto & name = pair.first ;
             int s , e ;
             while( pair.second.Pop(s,e))
-                UpdatePosCache(name,s,e,false);
+                UpdatePosCache(name,s,e,false,pair.second.scaff_id,pair.second.gap_id);
         }
         pos_caches_non.clear();
     }
-    bool LogAllChoose(const BGIQD::ONT::ONT2GapInfos & chooses ,
-            const BGIQD::stLFR::ContigDetail & prev )
+
+    bool LogAllChoose( const BGIQD::ONT::ONT2GapInfos & chooses ,
+            const BGIQD::stLFR::ContigDetail & prev ,int curr_scaff_id, int curr_gap_id)
     {
-        bool succ = false;
+        bool succ = false ;
         for ( const auto & pair : chooses )
         {
             //auto & pair = chooses.front() ;
@@ -234,9 +234,9 @@ struct AppConfig
                 cut_start = new_cut_start;
                 succ = true;
                 if( ! candidate_shake_filter )
-                    UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1 , false);
+                    UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1 , false,curr_scaff_id,curr_gap_id);
                 else
-                    UpdateNonRepeatCache(m1.target_name,cut_start , cut_start+cut_len-1);
+                    UpdateNonRepeatCache(m1.target_name,cut_start , cut_start+cut_len-1,curr_scaff_id,curr_gap_id);
             }
             else if ( tmp.gap_size < 0 && tmp.gap_size >= -max_hang )
             {
@@ -286,9 +286,9 @@ struct AppConfig
                 }
                 succ = true;
                 if( ! candidate_shake_filter )
-                    UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1, false);
+                    UpdatePosCache(m1.target_name,cut_start , cut_start+cut_len-1, false,curr_scaff_id,curr_gap_id);
                 else
-                    UpdateNonRepeatCache(m1.target_name,cut_start , cut_start+cut_len-1);
+                    UpdateNonRepeatCache(m1.target_name,cut_start , cut_start+cut_len-1,curr_scaff_id,curr_gap_id);
             }
         }
         CleanNonRepeatCache();
@@ -353,6 +353,7 @@ struct AppConfig
         }
         return used_pair ;
     }
+
     void ParseAllGap()
     {
         BGIQD::LOG::timer t(loger,"ParseAllGap");
@@ -373,8 +374,10 @@ struct AppConfig
         for( auto & pair : scaff_info_helper.all_scaff )
         {
             auto & a_scaff = pair.second.a_scaff ;
+            int curr_scaff_id = pair.second.scaff_id ;
             for( int i = 1 ; i < (int) a_scaff.size() ; i++ )
             {
+                int curr_gap_id = i;
                 gap_tatal ++ ;
                 auto & prev = a_scaff.at(i-1);
                 auto & next = a_scaff.at(i) ;
@@ -434,7 +437,7 @@ struct AppConfig
                 }
                 if( candidate_max > 0 )
                     SortAndFilterChoose(chooses);
-                if(LogAllChoose(chooses,prev) == false)
+                if(LogAllChoose(chooses,prev,curr_scaff_id,curr_gap_id) == false)
                     noverlap_f ++ ;
             }
         }
@@ -462,7 +465,11 @@ struct AppConfig
             {
                 candidate_id ++ ;
                 this_cut += e-s+1 ;
-                std::cout<<">seq_"<<candidate_id<<'\n';
+                std::cout<<">seq_"<<candidate_id
+                         <<"    #read_name:"<<pair.first
+                         <<"    #scaff_id:"<<pair.second.scaff_id
+                         <<"    #gap_id:"<<pair.second.gap_id
+                         <<'\n';
                 std::cout<<ont_read.substr(s,e-s+1)<<'\n';
             }
             total_cut += this_cut ;
@@ -470,11 +477,15 @@ struct AppConfig
         }
         for(const auto & data: pos_caches_split )
         {
-            std::string name ; int s , e ;bool need_reverse;
-            std::tie(name,s,e,need_reverse)=data;
+            std::string name ; int s , e ;bool need_reverse; int scaff_id; int  gap_id;
+            std::tie(name,s,e,need_reverse,scaff_id,gap_id)=data;
             const auto & ont_read = reads.at(name).atcgs ;
             candidate_id ++ ;
-            std::cout<<">seq_"<<candidate_id<<'\n';
+            std::cout<<">seq_"<<candidate_id
+                     <<"    #read_name:"<<name
+                     <<"    #scaff_id:"<<scaff_id
+                     <<"    #gap_id:"<<gap_id
+                     <<'\n';
             if( ! need_reverse )
                 std::cout<<ont_read.substr(s,e-s+1)<<'\n';
             else 
@@ -535,7 +546,6 @@ int main(int argc , char ** argv)
         config.ont_read_q  = ont_reads_q.to_string();
         config.ont_read_a  = "" ;
     }
-
     config.max_hang = max_hang.to_int();
     config.fa = factor_a.to_float();
     config.fb = factor_b.to_float();

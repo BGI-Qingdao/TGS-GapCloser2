@@ -7,7 +7,7 @@ namespace BGIQD {
 
         struct SubSets
         {
-            void Push( int start , int end )
+            void Push( int start , int end ,int curr_scaff_id, int curr_gap_id)
             {
                 assert( start <= end );
                 if( ranges.find(start ) == ranges.end()) 
@@ -16,6 +16,8 @@ namespace BGIQD {
                     if( ranges.at(start) < end )
                         ranges[start] =end ;
                 clean_overlap();
+                scaff_id = curr_scaff_id;
+                gap_id = curr_gap_id;
             }
 
             bool Pop( int & start , int & end )
@@ -32,9 +34,11 @@ namespace BGIQD {
                 }
             }
 
+            int scaff_id;
+            int gap_id;
             private:
             std::map<int , int > ranges;
-
+            
             void clean_overlap()
             {
                 while(true)
